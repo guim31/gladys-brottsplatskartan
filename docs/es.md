@@ -1,0 +1,132 @@
+# Brottsplatskartan
+
+Brottsplatskartan lleva a Gladys los sucesos que publica la policía sueca: alrededor de su casa, en
+una provincia (län) o en los lugares que usted nombre. Para cada zona seguida, Gladys recibe un
+dispositivo con el número de sucesos de las últimas 24 horas por categoría (robo en vivienda,
+hurto, violencia, incendio, accidente de tráfico, otros) y el último suceso. Un disparador de
+escena reacciona a cada nuevo suceso, una acción de escena lee los sucesos recientes en una frase y
+un widget del panel los enumera.
+
+Los datos vienen de [polisen.se](https://polisen.se/aktuellt/handelser/), geolocalizados por
+[Brottsplatskartan](https://brottsplatskartan.se). Sin afiliación con Brottsplatskartan ni con la
+policía sueca.
+
+## Requisitos
+
+- Gladys Assistant 5.1.0 o posterior.
+- Acceso a Internet desde Gladys: la integración lee `brottsplatskartan.se` por HTTPS. Sin cuenta
+  ni clave.
+- Para la zona de radio: la ubicación de su casa en Gladys (**Ajustes → Casas**), o unas
+  coordenadas introducidas en la configuración.
+- Solo Suecia: la policía de otros países no está cubierta.
+
+## Configuración
+
+Instale la integración (**Integraciones → Instalar desde GitHub**, dirección
+`https://github.com/guim31/gladys-brottsplatskartan`), abra su pestaña **Configuración** y rellene:
+
+| Campo                         | Función                                                                                                                                                                             |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Latitud / longitud del centro | Deje ambas vacías para usar la ubicación de su casa. Punto o coma decimal.                                                                                                          |
+| Radio alrededor del centro    | 2, 5, 10, 20 o 50 km, o **Desactivado**. La policía suele situar un suceso solo en el centro de una ciudad o un barrio: 10 km o más es más seguro. Por defecto: 10 km.              |
+| Provincia (län)               | Opcional: seguir todos los sucesos de una de las 21 provincias.                                                                                                                     |
+| Lugares                       | Opcional: municipios, ciudades o barrios, separados por comas, tal como los nombra la policía (p. ej. `Solna, Sundbyberg`). Los acentos son opcionales (`Malmo` encuentra `Malmö`). |
+| Intervalo de lectura          | 10, 15 o 30 minutos. Por defecto: 15.                                                                                                                                               |
+| Idioma de los textos          | Nombres de las funciones (al crearlas) y textos enviados a las escenas. Por defecto: francés.                                                                                       |
+
+Guarde, abra la pestaña **Descubrir** y cree los dispositivos. **Mostrar los últimos sucesos**
+consulta el servicio enseguida y responde con los dos sucesos más recientes.
+
+## Dispositivos
+
+Hay un dispositivo por zona:
+
+- **Sucesos policiales cerca de casa**: los sucesos dentro del radio del centro.
+- **Sucesos policiales en mi zona**: los sucesos de la provincia elegida, más los de los lugares
+  nombrados. Solo existe si se indica una provincia o lugares.
+
+Cada dispositivo tiene estas funciones:
+
+| Función                      | Tipo     | Significado                                                              |
+| ---------------------------- | -------- | ------------------------------------------------------------------------ |
+| Sucesos (24 h)               | contador | Todos los sucesos de la zona en las últimas 24 horas.                    |
+| Robos en viviendas (24 h)    | contador | Robos con allanamiento (Inbrott, Stöld/inbrott), intentos incluidos.     |
+| Hurtos (24 h)                | contador | Hurtos (Stöld, robo de vehículos…).                                      |
+| Violencia (24 h)             | contador | Agresiones, atracos, tiroteos, amenazas, homicidios, delitos sexuales.   |
+| Incendios (24 h)             | contador | Incendios, incendios provocados, alarmas de incendio.                    |
+| Accidentes de tráfico (24 h) | contador | Accidentes de tráfico de todo tipo.                                      |
+| Otros sucesos (24 h)         | contador | Todo lo demás (alcohol al volante, estafas, desapariciones, controles…). |
+| Último suceso                | texto    | Tipo (traducido, con la etiqueta sueca), lugar, fecha y distancia.       |
+| Distancia del último suceso  | km       | Solo zona de radio: a qué distancia del centro está el último suceso.    |
+
+Los contadores se deslizan: un suceso sale de ellos 24 horas después de su publicación. Los
+resúmenes de una noche o de un día que la policía publica para toda una provincia («Sammanfattning
+natt») se descartan: repiten sucesos ya listados.
+
+## Widget
+
+**Sucesos policiales** enumera los sucesos de todas sus zonas de las últimas 24 horas, del más
+reciente al más antiguo (8 filas como máximo): el tipo, el lugar, la hora y la distancia, con una
+insignia de color para la categoría. Toque una fila para leer el titular y el resumen de la policía
+(en sueco, tal como se publicaron) y abrir el suceso en Brottsplatskartan.
+
+## Disparador de escena
+
+**Brottsplatskartan: nuevo suceso policial** se activa en cuanto se lee un nuevo suceso de una de
+sus zonas, si se publicó hace menos de dos horas. Puede filtrarlo por **zona** (cerca de casa, mi
+zona) y por **categoría**. Un suceso de las dos zonas se activa una vez por zona: filtre por zona
+para evitar duplicados. Los sucesos ya listados en el primer arranque, tras un reinicio o tras un
+cambio de ajustes no activan nada.
+
+Variables: `zone`, `category`, `zone_name`, `category_name`, `type` (sueco), `type_name`
+(traducido), `place`, `location`, `distance_km` (vacía sin centro o para un suceso situado solo en
+la provincia), `headline` (sueco), `summary`, `time` (ISO 8601) y `url`.
+
+## Acción de escena
+
+**Brottsplatskartan: leer los sucesos recientes** devuelve `text` (los sucesos de las últimas
+24 horas en una frase, cinco como máximo, del más reciente al más antiguo) y `count`. Vuelve a leer
+el servicio si la última lectura tiene más de un intervalo.
+
+## Ejemplos de escenas
+
+- _Un robo cerca de casa_: disparador **nuevo suceso policial**, zona **Cerca de casa**, categoría
+  **Robo en vivienda** → enviar un mensaje con las variables **summary** y **url**.
+- _Resumen de la mañana_: cada día a las 7:30 → **leer los sucesos recientes** → decir o enviar su
+  salida **text**.
+- _Incendio en el barrio_: disparador **nuevo suceso policial**, categoría **Incendio**, y una
+  condición sobre `distance_km` inferior a 3 → encender una luz y enviar una notificación.
+
+## Solución de problemas
+
+- **Ningún dispositivo de radio, o «Sin centro para el radio»**: indique la ubicación de su casa en
+  Gladys, o introduzca las dos coordenadas.
+- **Pocos sucesos cerca de casa**: la policía sitúa muchos sucesos solo en el centro de una ciudad
+  o un barrio, o a nivel de provincia (estos nunca cuentan en la zona de radio). Amplíe el radio, o
+  siga la provincia o el municipio.
+- **Un lugar no encuentra nada**: escríbalo como la policía (el municipio, p. ej. `Solna`, o un
+  barrio listado en Brottsplatskartan).
+- **«Brottsplatskartan no responde»**: el servicio está caído o inaccesible; la integración lo
+  reintenta en cada intervalo y lo indica una vez en los registros cuando vuelve.
+- Registros: `LOG_LEVEL=debug` muestra cada lectura. La ubicación de su casa nunca se registra.
+
+## Límites
+
+- No es una alarma: la policía publica sus sucesos de minutos a horas después de los hechos, y solo
+  los que decide hacer públicos.
+- Las posiciones son aproximadas (una ciudad, un barrio, una calle) y vienen de la geolocalización
+  de Brottsplatskartan.
+- Titulares y resúmenes quedan en sueco; los tipos de suceso se traducen según una lista de los
+  tipos de la policía, un tipo desconocido queda en sueco.
+- La integración conserva tres días de sucesos: el último suceso de una zona tranquila durante más
+  tiempo indica «Ningún suceso reciente».
+- Condiciones de la API ([brottsplatskartan.se/sida/api](https://brottsplatskartan.se/sida/api)):
+  libre para uso no comercial, cada llamada lleva el parámetro `app`, 500 llamadas por minuto como
+  máximo. La integración solo lee los sucesos nuevos, una vez por intervalo (unas 100 llamadas al
+  día).
+
+## Créditos
+
+Datos: la policía sueca (polisen.se), a través de Brottsplatskartan. La idea viene de la
+integración `brottsplatskartan` de Home Assistant. Sin afiliación con Brottsplatskartan ni con la
+policía sueca.
