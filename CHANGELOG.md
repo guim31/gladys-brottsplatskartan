@@ -10,6 +10,8 @@ the notes of the version's GitHub Release.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-24
+
 ### Added
 
 - One device per followed zone: "near home" (a radius of 2 to 50 km around the house or around
@@ -26,3 +28,6 @@ the notes of the version's GitHub Release.
   and a link to each event on Brottsplatskartan.
 - "Show the latest events" in the Configuration screen.
 - Police event types translated into English, French, German and Spanish, the Swedish label kept.
+
+[Unreleased]: https://github.com/guim31/gladys-brottsplatskartan/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/guim31/gladys-brottsplatskartan/releases/tag/v1.0.0
