@@ -1,61 +1,132 @@
-# Demo Devices Template
+# Brottsplatskartan
 
-This is the user documentation of the integration. Gladys re-hosts this file
-and shows a permanent **Documentation** link to it in the Configuration screen
-(in the user's language, with English as the fallback) — it is when
-configuring that the user needs it most. Keep the short onboarding hints in
-the `section` blocks of the manifest `config_schema`; put the long
-step-by-step (screenshots, troubleshooting…) here.
+Brottsplatskartan brings the events published by the Swedish police into Gladys: around your house,
+in a county (län) or in the places you name. For each followed zone, Gladys gets a device with the
+number of events of the last 24 hours by category (burglary, theft, violence, fire, road accident,
+other) and the latest event. A scene trigger fires on every new event, a scene action reads the
+recent events as one sentence, and a dashboard widget lists them.
 
-## What you get
+The data comes from [polisen.se](https://polisen.se/aktuellt/handelser/), geocoded by
+[Brottsplatskartan](https://brottsplatskartan.se). Not affiliated with Brottsplatskartan nor with
+the Swedish police.
 
-Six demo devices show up after installation: a weather station (real data
-from Open-Meteo), a switch, a dimmable light, a smart plug with power
-metering, a motion sensor and a camera.
+## Requirements
+
+- Gladys Assistant 5.1.0 or later.
+- Internet access from Gladys: the integration reads `brottsplatskartan.se` over HTTPS. No account
+  and no key.
+- For the radius zone: a location for your house in Gladys (**Settings → Houses**), or coordinates
+  typed in the configuration.
+- Sweden only: the police of other countries is not covered.
 
 ## Configuration
 
-1. Open the **Configuration** tab of the integration.
-2. Set the **latitude** and **longitude** the demo weather station should
-   observe (they default to Paris), and pick your temperature unit.
-   The **refresh interval** sets how often the weather station and the
-   plug's power are read: every 5 minutes by default, every minute at most.
-3. Save: the devices appear in the **Discovery** tab, ready to be added.
+Install the integration (**Integrations → Install from GitHub**, address
+`https://github.com/guim31/gladys-brottsplatskartan`), open its **Configuration** tab and fill in:
 
-The **Prefer the local connection** toggle drives the demo plug: it reports
-the channel it actually uses as a badge (local or cloud), with an orange dot
-when it runs degraded (local refused, cloud fallback).
+| Field                       | What it does                                                                                                                                                          |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Centre latitude / longitude | Leave both empty to use the location of your house. Decimal point or comma.                                                                                           |
+| Radius around the centre    | 2, 5, 10, 20 or 50 km, or **Off**. The police often locates an event at the centre of a town or district only: 10 km or more is safer. Default: 10 km.                |
+| County (län)                | Optional: follow every event of one of the 21 counties.                                                                                                               |
+| Places                      | Optional: municipalities, towns or districts, separated by commas, as the police names them (e.g. `Solna, Sundbyberg`). Accents are optional (`Malmo` finds `Malmö`). |
+| Reading interval            | 10, 15 or 30 minutes. Default: 15.                                                                                                                                    |
+| Language of the texts       | Names of the features (at their creation) and texts sent to the scenes. Default: French.                                                                              |
 
-## Actions
+Save, then open the **Discover** tab and create the devices. **Show the latest events** checks the
+service at once and answers with the two newest events.
 
-- **Test the weather provider** — performs a live request to Open-Meteo and
-  shows the current temperature and humidity under the button.
-- **Identify a device** — pick one of your devices in the list and it will
-  signal itself (the demo light "blinks" in the logs).
+## Devices
 
-## Scenes
+There is one device per zone:
 
-The integration adds its own cards to the scene editor (Gladys 5.1 or
-later), under the **Integrations** category:
+- **Police events near home**: the events within the radius of the centre.
+- **Police events in my area**: the events of the chosen county, plus those of the named places.
+  It exists only when a county or places are filled in.
 
-- **Motion detected** (trigger) — starts the scene when a demo motion sensor
-  sees something move. Optionally pick the sensor and what moved (person,
-  animal); left empty, any detection matches. The following actions can
-  read what moved with `{{triggerEvent.data.target}}`.
-- **Identify a device** (action) — makes the chosen device signal itself.
-  It returns whether the device could signal itself, so the following
-  actions can depend on it.
+Each device has these features:
 
-## Dashboard
+| Feature               | Type    | Meaning                                                              |
+| --------------------- | ------- | -------------------------------------------------------------------- |
+| Events (24 h)         | counter | All the events of the zone in the last 24 hours.                     |
+| Burglaries (24 h)     | counter | Burglaries (Inbrott, Stöld/inbrott), attempts included.              |
+| Thefts (24 h)         | counter | Thefts (Stöld, vehicle theft…).                                      |
+| Violence (24 h)       | counter | Assaults, robberies, shootings, threats, murders, sexual offences.   |
+| Fires (24 h)          | counter | Fires, arson, fire alarms.                                           |
+| Road accidents (24 h) | counter | Road accidents of every kind.                                        |
+| Other events (24 h)   | counter | Everything else (drink driving, fraud, missing persons, checks…).    |
+| Latest event          | text    | Type (translated, with the Swedish label), place, date and distance. |
+| Latest event distance | km      | Radius zone only: how far the latest event is from the centre.       |
 
-Add the **Demo status** widget to a dashboard: it shows the live
-temperature of the weather station and the power of the office plug, the
-connection the plug currently uses (orange when degraded) and the observed
-location. Its **Identify the light** button makes the demo light signal
-itself.
+The counters slide: an event leaves them 24 hours after its publication. The summaries of a night
+or a day that the police publishes for a whole county ("Sammanfattning natt") are left out: they
+repeat events already listed.
+
+## Widget
+
+**Police events** lists the events of all your zones of the last 24 hours, newest first (8 rows at
+most): the type, the place, the time and the distance, with a coloured badge for the category.
+Tap a row to read the police headline and summary (in Swedish, as published) and to open the
+event on Brottsplatskartan.
+
+## Scene trigger
+
+**Brottsplatskartan: new police event** fires as soon as a new event of one of your zones is read,
+if it was published less than two hours before. You can filter it by **zone** (near home, my area)
+and by **category**. An event in both zones fires once per zone: filter on the zone to avoid
+doubles. The events already listed at the first start, after a restart or after a change of
+settings fire nothing.
+
+Variables: `zone`, `category`, `zone_name`, `category_name`, `type` (Swedish), `type_name`
+(translated), `place`, `location`, `distance_km` (empty without a centre or for an event located by
+its county only), `headline` (Swedish), `summary`, `time` (ISO 8601) and `url`.
+
+## Scene action
+
+**Brottsplatskartan: read the recent events** returns `text` (the events of the last 24 hours as
+one sentence, five at most, newest first) and `count`. It reads the service again if the last
+reading is older than one interval.
+
+## Scene examples
+
+- _A burglary near home_: trigger **new police event**, zone **Near home**, category **Burglary**
+  → send a message with the **summary** and **url** variables.
+- _Morning briefing_: every day at 7:30 → **read the recent events** → say or send its **text** output.
+- _Fire in the neighbourhood_: trigger **new police event**, category **Fire**, then a condition on
+  `distance_km` below 3 → turn on a light and send a notification.
 
 ## Troubleshooting
 
-The integration logs everything it does: check the integration logs from the
-Gladys UI (or `docker logs` on the host) with `LOG_LEVEL=debug` for the full
-detail.
+- **No radius device, or "No centre for the radius"**: give your house a location in Gladys, or
+  type both coordinates.
+- **Few events near home**: the police locates many events at the centre of a town or a district
+  only, or at the county level (those never count in the radius zone). Widen the radius, or follow
+  the county or the municipality.
+- **A place finds nothing**: write it as the police does (the municipality, e.g. `Solna`, or a
+  district listed on Brottsplatskartan).
+- **"Brottsplatskartan does not answer"**: the service is down or unreachable; the integration
+  tries again at every interval and says once in the logs when it is back.
+- Logs: `LOG_LEVEL=debug` shows every reading. The location of your house is never logged.
+
+## Limits
+
+- This is not an alarm: the police publishes its events minutes to hours after the facts, and only
+  the ones it chooses to make public.
+- A place matches the municipality, but also the districts and streets the police names: a common
+  name (a district called `Centrum`) can catch events elsewhere in Sweden. Prefer a municipality.
+- Alarms (`Larm inbrott`, `Larm överfall`) count as other events, not as burglaries.
+- Positions are approximate (a town, a district, a street) and come from Brottsplatskartan's
+  geocoding.
+- Headlines and summaries stay in Swedish; event types are translated from a list of the police
+  types, an unknown type stays in Swedish.
+- The integration keeps three days of events: the latest event of a zone quiet for longer reads
+  "No recent event".
+- Terms of the API ([brottsplatskartan.se/sida/api](https://brottsplatskartan.se/sida/api)): free
+  for non-commercial use, every call carries the `app` parameter, 500 calls a minute at most. The
+  integration reads only the new events, once per interval (about 100 calls a day).
+
+## Credits
+
+Data: the Swedish police (polisen.se), through Brottsplatskartan. The idea comes
+from the Home Assistant `brottsplatskartan` integration. Not affiliated with Brottsplatskartan nor
+with the Swedish police.

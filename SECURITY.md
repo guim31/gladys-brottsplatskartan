@@ -30,6 +30,14 @@ Gladys before reporting a problem.
 
 In scope: the code of this repository and the Docker image it publishes.
 
+The integration needs no account and stores no secret. It reads the public Brottsplatskartan API
+(`brottsplatskartan.se`, HTTPS, no key; the `app` parameter names the integration, not the user)
+and the houses of Gladys, for the location of the centre of the radius (the `location` access of
+the manifest). Under `/data` it keeps one file, `brottsplatskartan.json`: the police events of the
+last three days as Brottsplatskartan publishes them (public data) and the newest id read, nothing
+about the user. The coordinates of the house or of the configuration are never written to `/data`
+nor to the logs.
+
 Out of scope: Gladys Assistant itself (see its
 [security policy](https://github.com/GladysAssistant/Gladys/security/policy)),
-and the third-party services and devices the integration talks to.
+and the Brottsplatskartan service.

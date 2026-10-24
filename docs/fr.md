@@ -1,67 +1,140 @@
-# Template de démonstration
+# Brottsplatskartan
 
-Ceci est la documentation utilisateur de l'intégration. Gladys ré-héberge ce
-fichier et affiche un lien **Documentation** permanent vers lui dans l'écran
-de configuration (dans la langue de l'utilisateur, avec l'anglais en repli) —
-c'est au moment de configurer que l'utilisateur en a le plus besoin. Gardez
-les courtes indications d'accueil dans les blocs `section` du `config_schema`
-du manifest ; mettez ici le pas-à-pas détaillé (captures d'écran, dépannage…).
+Brottsplatskartan amène dans Gladys les événements publiés par la police suédoise : autour de votre
+maison, dans un comté (län) ou dans les lieux que vous nommez. Pour chaque zone suivie, Gladys
+reçoit un appareil avec le nombre d'événements des dernières 24 heures par catégorie (cambriolage,
+vol, violence, incendie, accident de la route, autre) et le dernier événement. Un déclencheur de
+scène réagit à chaque nouvel événement, une action de scène lit les événements récents en une
+phrase, et un widget du tableau de bord les liste.
 
-## Ce que vous obtenez
+Les données viennent de [polisen.se](https://polisen.se/aktuellt/handelser/), géolocalisées par
+[Brottsplatskartan](https://brottsplatskartan.se). Non affiliée à Brottsplatskartan ni à la police
+suédoise.
 
-Six appareils de démonstration apparaissent après l'installation : une
-station météo (vraies données Open-Meteo), un interrupteur, une lampe
-variable, une prise connectée avec mesure de puissance, un détecteur de
-mouvement et une caméra.
+## Prérequis
+
+- Gladys Assistant 5.1.0 ou plus récent.
+- Un accès à Internet depuis Gladys : l'intégration lit `brottsplatskartan.se` en HTTPS. Ni compte
+  ni clé.
+- Pour la zone de rayon : la position de votre maison dans Gladys (**Paramètres → Maisons**), ou des
+  coordonnées saisies dans la configuration.
+- La Suède seulement : la police des autres pays n'est pas couverte.
 
 ## Configuration
 
-1. Ouvrez l'onglet **Configuration** de l'intégration.
-2. Renseignez la **latitude** et la **longitude** que la station météo de
-   démonstration doit observer (Paris par défaut), et choisissez votre unité
-   de température. L'**intervalle de rafraîchissement** règle la fréquence
-   de lecture de la station météo et de la puissance de la prise : toutes
-   les 5 minutes par défaut, toutes les minutes au plus.
-3. Enregistrez : les appareils apparaissent dans l'onglet **Découverte**,
-   prêts à être ajoutés.
+Installez l'intégration (**Intégrations → Installer depuis GitHub**, adresse
+`https://github.com/guim31/gladys-brottsplatskartan`), ouvrez son onglet **Configuration** et
+remplissez :
 
-Le réglage **Préférer la connexion locale** pilote la prise de
-démonstration : elle affiche en badge le canal réellement utilisé (local ou
-cloud), avec un point orange quand elle fonctionne en mode dégradé (local
-refusé, bascule cloud).
+| Champ                          | Rôle                                                                                                                                                                              |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Latitude / longitude du centre | Laissez les deux vides pour utiliser la position de votre maison. Point ou virgule décimale.                                                                                      |
+| Rayon autour du centre         | 2, 5, 10, 20 ou 50 km, ou **Désactivé**. La police situe souvent un événement au centre d'une ville ou d'un quartier seulement : 10 km ou plus est plus sûr. Par défaut : 10 km.  |
+| Comté (län)                    | Facultatif : suivre tous les événements de l'un des 21 comtés.                                                                                                                    |
+| Lieux                          | Facultatif : communes, villes ou quartiers, séparés par des virgules, comme la police les nomme (ex. `Solna, Sundbyberg`). Les accents sont facultatifs (`Malmo` trouve `Malmö`). |
+| Intervalle de lecture          | 10, 15 ou 30 minutes. Par défaut : 15.                                                                                                                                            |
+| Langue des textes              | Noms des fonctionnalités (à leur création) et textes envoyés aux scènes. Par défaut : français.                                                                                   |
 
-## Actions
+Enregistrez, puis ouvrez l'onglet **Découverte** et créez les appareils. **Afficher les derniers
+événements** interroge le service tout de suite et répond avec les deux événements les plus récents.
 
-- **Tester le fournisseur météo** — effectue une requête en direct vers
-  Open-Meteo et affiche la température et l'humidité actuelles sous le
-  bouton.
-- **Identifier un appareil** — choisissez un de vos appareils dans la liste
-  et il se signale (la lampe de démonstration « clignote » dans les logs).
+## Appareils
 
-## Scènes
+Il y a un appareil par zone :
 
-L'intégration ajoute ses propres cartes à l'éditeur de scènes (Gladys 5.1
-ou plus récent), dans la catégorie **Intégrations** :
+- **Interventions de police près de chez moi** : les événements dans le rayon du centre.
+- **Interventions de police dans ma zone** : les événements du comté choisi, plus ceux des lieux
+  nommés. Il n'existe que si un comté ou des lieux sont renseignés.
 
-- **Mouvement détecté** (déclencheur) — lance la scène quand un détecteur
-  de démonstration voit bouger quelque chose. Choisissez éventuellement le
-  détecteur et ce qui a bougé (personne, animal) ; laissés vides, toute
-  détection correspond. Les actions suivantes peuvent lire ce qui a bougé
-  avec `{{triggerEvent.data.target}}`.
-- **Identifier un appareil** (action) — fait se signaler l'appareil choisi.
-  Elle indique si l'appareil a pu se signaler, pour que les actions
-  suivantes puissent en dépendre.
+Chaque appareil a ces fonctionnalités :
 
-## Tableau de bord
+| Fonctionnalité                | Type     | Sens                                                                                    |
+| ----------------------------- | -------- | --------------------------------------------------------------------------------------- |
+| Événements (24 h)             | compteur | Tous les événements de la zone sur les dernières 24 heures.                             |
+| Cambriolages (24 h)           | compteur | Cambriolages (Inbrott, Stöld/inbrott), tentatives comprises.                            |
+| Vols (24 h)                   | compteur | Vols (Stöld, vols de véhicules…).                                                       |
+| Violences (24 h)              | compteur | Agressions, vols avec violence, coups de feu, menaces, meurtres, infractions sexuelles. |
+| Incendies (24 h)              | compteur | Incendies, incendies criminels, alarmes incendie.                                       |
+| Accidents de la route (24 h)  | compteur | Accidents de la route de tout type.                                                     |
+| Autres événements (24 h)      | compteur | Tout le reste (alcool au volant, escroqueries, disparitions, contrôles…).               |
+| Dernier événement             | texte    | Type (traduit, avec le libellé suédois), lieu, date et distance.                        |
+| Distance du dernier événement | km       | Zone de rayon seulement : la distance entre le dernier événement et le centre.          |
 
-Ajoutez le widget **État de la démo** à un tableau de bord : il affiche en
-direct la température de la station météo et la puissance de la prise du
-bureau, la connexion utilisée par la prise (en orange si dégradée) et la
-position observée. Son bouton **Identifier la lampe** fait se signaler la
-lampe de démonstration.
+Les compteurs glissent : un événement en sort 24 heures après sa publication. Les résumés d'une
+nuit ou d'une journée que la police publie pour tout un comté (« Sammanfattning natt ») sont
+écartés : ils répètent des événements déjà listés.
+
+## Widget
+
+**Événements de police** liste les événements de toutes vos zones des dernières 24 heures, du plus
+récent au plus ancien (8 lignes au plus) : le type, le lieu, l'heure et la distance, avec une
+pastille de couleur pour la catégorie. Touchez une ligne pour lire le titre et le résumé de la
+police (en suédois, tels que publiés) et ouvrir l'événement sur Brottsplatskartan.
+
+## Déclencheur de scène
+
+**Brottsplatskartan : nouvel événement de police** se déclenche dès qu'un nouvel événement de l'une
+de vos zones est lu, s'il a été publié moins de deux heures avant. Vous pouvez le filtrer par
+**zone** (près de chez moi, ma zone) et par **catégorie**. Un événement des deux zones déclenche une
+fois par zone : filtrez sur la zone pour éviter les doublons. Les événements déjà listés au premier
+démarrage, après un redémarrage ou après un changement de réglages ne déclenchent rien.
+
+Variables : `zone`, `category`, `zone_name`, `category_name`, `type` (suédois), `type_name`
+(traduit), `place`, `location`, `distance_km` (vide sans centre ou pour un événement situé au
+comté seulement), `headline` (suédois), `summary`, `time` (ISO 8601) et `url`.
+
+## Action de scène
+
+**Brottsplatskartan : lire les événements récents** renvoie `text` (les événements des dernières
+24 heures en une phrase, cinq au plus, du plus récent au plus ancien) et `count`. Elle relit le
+service si la dernière lecture date de plus d'un intervalle.
+
+## Exemples de scènes
+
+- _Un cambriolage près de chez moi_ : déclencheur **nouvel événement de police**, zone **Près de
+  chez moi**, catégorie **Cambriolage** → envoyer un message avec les variables **summary** et
+  **url**.
+- _Point du matin_ : chaque jour à 7 h 30 → **lire les événements récents** → dire ou envoyer sa
+  sortie **text**.
+- _Incendie dans le quartier_ : déclencheur **nouvel événement de police**, catégorie **Incendie**,
+  puis une condition sur `distance_km` inférieure à 3 → allumer une lampe et envoyer une
+  notification.
 
 ## Dépannage
 
-L'intégration journalise tout ce qu'elle fait : consultez les logs de
-l'intégration depuis l'interface Gladys (ou `docker logs` sur l'hôte) avec
-`LOG_LEVEL=debug` pour le détail complet.
+- **Pas d'appareil de rayon, ou « Aucun centre pour le rayon »** : indiquez la position de votre
+  maison dans Gladys, ou saisissez les deux coordonnées.
+- **Peu d'événements près de chez moi** : la police situe beaucoup d'événements au centre d'une
+  ville ou d'un quartier seulement, ou au niveau du comté (ceux-là ne comptent jamais dans la zone de
+  rayon). Élargissez le rayon, ou suivez le comté ou la commune.
+- **Un lieu ne trouve rien** : écrivez-le comme la police (la commune, ex. `Solna`, ou un quartier
+  listé sur Brottsplatskartan).
+- **« Brottsplatskartan ne répond pas »** : le service est en panne ou injoignable ; l'intégration
+  réessaie à chaque intervalle et le dit une fois dans les logs quand il revient.
+- Logs : `LOG_LEVEL=debug` montre chaque lecture. La position de votre maison n'est jamais écrite
+  dans les logs.
+
+## Limites
+
+- Ce n'est pas une alarme : la police publie ses événements de quelques minutes à quelques heures
+  après les faits, et seulement ceux qu'elle choisit de rendre publics.
+- Un lieu correspond à la commune, mais aussi aux quartiers et rues que la police nomme : un nom
+  courant (un quartier appelé `Centrum`) peut attraper des événements ailleurs en Suède. Préférez une
+  commune.
+- Les alarmes (`Larm inbrott`, `Larm överfall`) comptent comme autres événements, pas comme
+  cambriolages.
+- Les positions sont approchées (une ville, un quartier, une rue) et viennent de la géolocalisation
+  de Brottsplatskartan.
+- Titres et résumés restent en suédois ; les types d'événements sont traduits d'après une liste des
+  types de la police, un type inconnu reste en suédois.
+- L'intégration garde trois jours d'événements : le dernier événement d'une zone calme depuis plus
+  longtemps indique « Aucun événement récent ».
+- Conditions de l'API ([brottsplatskartan.se/sida/api](https://brottsplatskartan.se/sida/api)) :
+  libre pour un usage non commercial, chaque appel porte le paramètre `app`, 500 appels par minute
+  au plus. L'intégration ne lit que les nouveaux événements, une fois par intervalle (une centaine
+  d'appels par jour).
+
+## Crédits
+
+Données : la police suédoise (polisen.se), par Brottsplatskartan. L'idée vient de l'intégration
+Home Assistant `brottsplatskartan`. Non affiliée à Brottsplatskartan ni à la police suédoise.
