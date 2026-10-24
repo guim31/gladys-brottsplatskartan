@@ -87,7 +87,9 @@ test('the area zone: a county, places (accents optional), county-level events in
   assert.ok(
     w.monitor.zoneEvents.area.every((e) => e.county === 'kronoberg' || /Malmö/.test(e.location)),
   );
-  assert.equal(lastState(w, featureId(device, 'events_24h')), ids.length);
+  const recent = w.monitor.zoneEvents.area.filter((e) => START - e.time <= 24 * HOUR);
+  assert.equal(lastState(w, featureId(device, 'events_24h')), recent.length);
+  assert.ok(ids.length > recent.length, 'three days of history');
 });
 
 test('a county-level event is never in the radius zone, even at the county centre', async (t) => {
@@ -103,7 +105,7 @@ test('a county-level event is never in the radius zone, even at the county centr
   });
   await cycle(w);
   assert.equal(w.fake.sceneEvents.length, 0);
-  assert.equal(w.monitor.zoneEvents.radius.length, 2);
+  assert.equal(w.monitor.events.length, 2);
 });
 
 test('the first start fires nothing: what is listed is not news', async (t) => {
@@ -162,7 +164,7 @@ test('an event published long ago and listed late is not news', async (t) => {
   api.addEvent(SOLNA_OTHER, { time: START - 5 * HOUR });
   await cycle(w);
   assert.deepEqual(w.fake.sceneEvents, []);
-  assert.equal(w.monitor.zoneEvents.radius.length, 3, 'counted all the same');
+  assert.equal(w.monitor.events.length, 3, 'counted all the same');
 });
 
 test('the counters slide with the 24-hour window, the latest event stays', async (t) => {
@@ -182,11 +184,13 @@ test('the counters slide with the 24-hour window, the latest event stays', async
 test('the next readings ask only for the new events', async (t) => {
   const api = createApi();
   const w = await world(t, {}, { api });
-  assert.equal(api.requests.length, 1);
-  assert.equal(api.requests[0].searchParams.get('limit'), '100');
+  // The first start goes back three days: a few pages of 100.
+  const first = api.requests.length;
+  assert.ok(first >= 2 && first <= 4, `${first} requests`);
+  assert.ok(api.requests.every((url) => url.searchParams.get('limit') === '100'));
   await cycle(w);
-  assert.equal(api.requests.length, 2);
-  assert.equal(api.requests[1].searchParams.get('limit'), '30');
+  assert.equal(api.requests.length, first + 1);
+  assert.equal(api.requests.at(-1).searchParams.get('limit'), '30');
 });
 
 test('a restart reads what is new, fires only for it, and keeps the history', async (t) => {
@@ -198,14 +202,28 @@ test('a restart reads what is new, fires only for it, and keeps the history', as
   clock.advance(30 * MINUTE);
   const second = await world(t, {}, { api, clock, dataDir: first.dataDir });
   assert.equal(second.fake.sceneEvents.length, 1);
-  assert.equal(second.monitor.zoneEvents.radius.length, 3);
+  assert.equal(second.monitor.events.length, 3);
   assert.equal(api.requests.at(-1).searchParams.get('limit'), '30');
 });
 
 test('a change of configuration brings no false news, and new devices', async (t) => {
-  const w = await world(t);
+  const api = createApi();
+  const w = await world(t, {}, { api });
+  // A new event 20 km away, out of the 10 km radius: no trigger.
+  api.addEvent(SOLNA_OTHER, { time: START + MINUTE, lat: 59.5, lng: 18.0686 });
+  await cycle(w);
+  assert.deepEqual(w.fake.sceneEvents, []);
+  // The radius grows to 50 km: the event enters the zone, but it is not news.
   await w.fake.configUpdated({ radius: '50', county: 'skane', language: 'en' });
   assert.deepEqual(w.fake.sceneEvents, []);
+  assert.ok(w.monitor.zoneEvents.radius.some((event) => event.latitude === 59.5));
+  // A new one after the change fires once per zone it falls in.
+  api.addEvent(MALMO_FIRE, { time: START + 20 * MINUTE });
+  await cycle(w);
+  assert.deepEqual(
+    w.fake.sceneEvents.map((event) => event.data.zone),
+    ['area'],
+  );
   const names = w.fake.discoveredDevices.map((device) => device.name);
   assert.deepEqual(names, ['Police events near home', 'Police events in my area']);
   assert.ok(w.monitor.zoneEvents.radius.length > 2);
@@ -264,4 +282,29 @@ test('creating a device publishes everything at once and nudges the widget', asy
     }
   }
   assert.ok(w.fake.widgetRefreshes.length > refreshes);
+});
+
+test('Brottsplatskartan down: the counters keep sliding on the local history', async (t) => {
+  const api = createApi();
+  const w = await world(t, {}, { api });
+  const [device] = await createAll(w);
+  api.down = 503;
+  w.clock.time = Date.parse('2026-10-24T15:45:00Z');
+  await w.monitor.runCycle();
+  assert.equal(lastState(w, featureId(device, 'events_24h')), 1);
+  assert.equal(lastState(w, featureId(device, 'violence_24h')), 0);
+  const { data } = await w.fake.sceneAction('read_events', {});
+  assert.match(data.outputs.text, /Brottsplatskartan ne répond pas/);
+});
+
+test('houses unreadable: no false "no centre" message', async (t) => {
+  const w = await world(t);
+  t.mock.method(w.gladys, 'getHouses', async () => {
+    throw new Error('Gladys busy');
+  });
+  w.monitor.houseReadAt = -Infinity;
+  w.monitor.house = undefined;
+  w.monitor.statusMessage = undefined;
+  await cycle(w, 70);
+  assert.doesNotMatch(w.fake.connectionStatus.message?.en ?? '', /No centre/);
 });

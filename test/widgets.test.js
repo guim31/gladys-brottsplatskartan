@@ -131,3 +131,22 @@ test('check_now answers in the four languages, within a toast', async (t) => {
     /^\d+ événements de police en 24 heures : .* et \d+ de plus\. Vérifié à 11:25\.$/,
   );
 });
+
+test('check_now stays within a toast with the longest types, and says when the service is down', async (t) => {
+  const api = createApi();
+  const long = ['Våld/hot mot tjänsteman', 'Narkotikabrott', 'Trafikolycka, personskada'];
+  for (const [i, type] of long.entries()) {
+    api.addEvent(SOLNA_OTHER, { time: START - i * 60 * 1000, type, place: 'Upplands Väsby' });
+  }
+  const w = await world(t, {}, { api });
+  const { data } = await w.fake.action('check_now', {});
+  for (const language of LANGUAGES) {
+    assert.ok(data.message[language].length <= 200, `${language}: ${data.message[language]}`);
+    assert.match(data.message[language], /11:25\.$/);
+  }
+  api.down = 503;
+  w.clock.advance(16 * 60 * 1000);
+  const down = await w.fake.action('check_now', {});
+  assert.match(down.data.message.fr, /^Brottsplatskartan ne répond pas/);
+  assert.ok(down.data.message.de.length <= 200);
+});

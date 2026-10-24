@@ -252,11 +252,16 @@ export class Monitor {
     try {
       fetched = await fetchNewEvents(this.fetch, {
         afterId: previousId,
-        since: now - (previousId > 0 ? this.timings.historyMs : this.timings.windowMs),
+        since: now - this.timings.historyMs,
       });
       this.recovered('api', 'Brottsplatskartan answers again');
     } catch (err) {
       this.failed('api', 'warn', `Brottsplatskartan unreachable: ${err.message}`);
+      if (this.lastSuccessAt !== null) {
+        // The history is local: the 24-hour counters keep sliding meanwhile.
+        this.sortIntoZones(await this.center());
+        await this.publishStates();
+      }
       await this.updateConnectionStatus();
       return;
     }
@@ -436,7 +441,9 @@ export class Monitor {
     if (zones.length === 0) {
       parts.push(render(STATUS, 'noZone'));
     }
-    if (zones.includes('radius') && !this.config.center && !this.house) {
+    // Unknown while the houses could not be read: the logs say why.
+    const noHouse = !this.house && this.houseReadAt !== -Infinity;
+    if (zones.includes('radius') && !this.config.center && noHouse) {
       parts.push(render(STATUS, 'noCenter'));
     } else if (this.config.invalidCenter) {
       parts.push(render(STATUS, 'invalidCenter'));
@@ -485,7 +492,12 @@ export class Monitor {
     } else {
       await this.running;
     }
-    return { events: this.events, ok: this.lastSuccessAt !== null };
+    return {
+      events: this.events,
+      ok: this.lastSuccessAt !== null,
+      // The last reading failed: the events are those of the last success.
+      stale: this.failing.has('api'),
+    };
   }
 
   // --- Widget -------------------------------------------------------------------

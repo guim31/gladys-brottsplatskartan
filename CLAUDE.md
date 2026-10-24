@@ -249,7 +249,7 @@ long, et sur un « Sie »/« Ihr… » de politesse en allemand. Le store exige 
 - `GET /api/events?app=…&limit=1..500&page=N` : toute la Suède, **du plus récent au plus ancien, ids
   croissants dans le temps** (vérifié sur 500 événements), environ 60 à 100 événements par jour, 3,7 Ko
   chacun (texte complet, images de carte). On lit donc **seulement le nouveau** : page de 30 jusqu'au premier
-  id connu ; 100 au tout premier démarrage, jusqu'à 24 h. `area=` et `location=` filtrent côté serveur, pas
+  id connu ; pages de 100 au tout premier démarrage, jusqu'à 3 jours ; ids dédoublonnés entre pages (cache par URL). `area=` et `location=` filtrent côté serveur, pas
   la distance : une lecture nationale sert toutes les zones.
 - `/api/eventsNearby` : rayon auto-élargi (5 km puis plus jusqu'à 5 événements, 25 au plus), pas de date
   utile ; `/api/eventsMap` : compact mais `time` sans date (« 09:42 ») : **inutilisables** ici.
@@ -266,4 +266,6 @@ long, et sur un « Sie »/« Ihr… » de politesse en allemand. Le store exige 
   croître). Un événement des deux zones déclenche une fois par zone (variable `zone` pour filtrer).
 - Badges de widget : 16 caractères au plus (`Accidente de tráfico` passe par `CATEGORY_BADGES`). La
   légende du widget est limitée à 30 caractères par le test i18n.
+- `Larm inbrott` / `Larm överfall` (alarmes) → catégorie `other`, pas cambriolage. Pendant une panne de l'API,
+  les compteurs continuent de glisser sur l'historique local, et actions/toast le signalent.
 - Le test de conformité vérifie les états **par appareil** (préfixe d'`external_id`) : il y a deux appareils.

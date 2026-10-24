@@ -53,7 +53,7 @@ Gladys core ── devices, states, scene events, scene action, widget
 
 - Every 10, 15 or 30 minutes the container reads the newest police events of all of Sweden, page
   after page until an event it already knows (one page of 30 in practice; 100 at the very first
-  start, back to 24 hours). The ids only grow, so a change of settings or a restart brings no false
+  start, back to three days). The ids only grow, so a change of settings or a restart brings no false
   news. The devices are published with `should_poll: false`: the core does not poll external
   devices reliably (GladysAssistant/Gladys#3198).
 - Three days of events are kept under `/data`. Each zone is computed in the container: the

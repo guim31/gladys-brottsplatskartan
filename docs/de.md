@@ -119,6 +119,10 @@ wenn die letzte Abfrage älter als ein Intervall ist.
 
 - Das ist keine Alarmanlage: Die Polizei veröffentlicht ihre Ereignisse Minuten bis Stunden nach
   den Ereignissen, und nur die, die sie öffentlich machen will.
+- Ein Ort trifft die Gemeinde, aber auch die Stadtteile und Straßen, die die Polizei nennt: Ein
+  häufiger Name (ein Stadtteil namens `Centrum`) kann Ereignisse anderswo in Schweden erfassen. Nimm
+  lieber eine Gemeinde.
+- Alarme (`Larm inbrott`, `Larm överfall`) zählen als sonstige Ereignisse, nicht als Einbrüche.
 - Die Positionen sind ungefähr (ein Ort, ein Stadtteil, eine Straße) und stammen aus der
   Verortung von Brottsplatskartan.
 - Schlagzeilen und Zusammenfassungen bleiben auf Schwedisch; die Ereignistypen werden nach einer

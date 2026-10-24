@@ -145,6 +145,9 @@ export function parseEvent(raw) {
 export async function fetchNewEvents(fetchImpl, { afterId = 0, since }) {
   const limit = afterId > 0 ? PAGE_SIZE : FIRST_PAGE_SIZE;
   const events = [];
+  // Pages are cached apart by the API (2 to 5 minutes): two pages may come from
+  // two moments, and repeat an event.
+  const seen = new Set();
   let newestId = afterId;
   for (let page = 1; page <= MAX_PAGES; page += 1) {
     const body = await getJson(fetchImpl, eventsUrl({ page, limit }));
@@ -164,7 +167,8 @@ export async function fetchNewEvents(fetchImpl, { afterId = 0, since }) {
         done = true;
         continue;
       }
-      const event = parseEvent(raw);
+      const event = seen.has(id) ? null : parseEvent(raw);
+      seen.add(id);
       if (event) {
         events.push(event);
       }

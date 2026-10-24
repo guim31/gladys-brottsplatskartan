@@ -118,6 +118,11 @@ service si la dernière lecture date de plus d'un intervalle.
 
 - Ce n'est pas une alarme : la police publie ses événements de quelques minutes à quelques heures
   après les faits, et seulement ceux qu'elle choisit de rendre publics.
+- Un lieu correspond à la commune, mais aussi aux quartiers et rues que la police nomme : un nom
+  courant (un quartier appelé `Centrum`) peut attraper des événements ailleurs en Suède. Préférez une
+  commune.
+- Les alarmes (`Larm inbrott`, `Larm överfall`) comptent comme autres événements, pas comme
+  cambriolages.
 - Les positions sont approchées (une ville, un quartier, une rue) et viennent de la géolocalisation
   de Brottsplatskartan.
 - Titres et résumés restent en suédois ; les types d'événements sont traduits d'après une liste des

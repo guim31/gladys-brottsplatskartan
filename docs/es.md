@@ -114,6 +114,11 @@ el servicio si la última lectura tiene más de un intervalo.
 
 - No es una alarma: la policía publica sus sucesos de minutos a horas después de los hechos, y solo
   los que decide hacer públicos.
+- Un lugar coincide con el municipio, pero también con los barrios y calles que nombra la policía: un
+  nombre común (un barrio llamado `Centrum`) puede captar sucesos de otras partes de Suecia. Prefiera
+  un municipio.
+- Las alarmas (`Larm inbrott`, `Larm överfall`) cuentan como otros sucesos, no como robos en
+  viviendas.
 - Las posiciones son aproximadas (una ciudad, un barrio, una calle) y vienen de la geolocalización
   de Brottsplatskartan.
 - Titulares y resúmenes quedan en sueco; los tipos de suceso se traducen según una lista de los

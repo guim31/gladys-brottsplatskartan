@@ -168,3 +168,21 @@ test('a service in trouble: HTTP status, network error, not JSON, unexpected bod
     /no answer in 30 s/,
   );
 });
+
+test('pages cached at two moments: an event repeated on two pages is read once', async () => {
+  const api = createApi();
+  for (let i = 0; i < PAGE_SIZE; i += 1) {
+    api.addEvent(SOLNA_OTHER, { time: START });
+  }
+  const fetchImpl = api.fetch;
+  // The second page comes from a newer snapshot: one more event shifts it by one.
+  const shifted = async (input) => {
+    if (new URL(input).searchParams.get('page') === '2') {
+      api.addEvent(SOLNA_OTHER, { time: START });
+    }
+    return fetchImpl(input);
+  };
+  const { events } = await fetchNewEvents(shifted, { afterId: 512248, since: START - 3 * DAY });
+  const ids = events.map((event) => event.id);
+  assert.equal(new Set(ids).size, ids.length);
+});

@@ -112,6 +112,9 @@ reading is older than one interval.
 
 - This is not an alarm: the police publishes its events minutes to hours after the facts, and only
   the ones it chooses to make public.
+- A place matches the municipality, but also the districts and streets the police names: a common
+  name (a district called `Centrum`) can catch events elsewhere in Sweden. Prefer a municipality.
+- Alarms (`Larm inbrott`, `Larm överfall`) count as other events, not as burglaries.
 - Positions are approximate (a town, a district, a street) and come from Brottsplatskartan's
   geocoding.
 - Headlines and summaries stay in Swedish; event types are translated from a list of the police

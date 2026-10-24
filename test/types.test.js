@@ -15,6 +15,8 @@ test('the categories of the police types', () => {
     Inbrott: 'burglary',
     'Inbrott, försök': 'burglary',
     'Stöld/inbrott': 'burglary',
+    'Larm inbrott': 'other',
+    'Larm överfall': 'other',
     Stöld: 'theft',
     'Motorfordon, stöld': 'theft',
     'Stöld, försök': 'theft',

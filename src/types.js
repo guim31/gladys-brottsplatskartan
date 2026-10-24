@@ -21,6 +21,10 @@ export function categoryOf(type) {
   if (text.startsWith('sammanfattning')) {
     return null;
   }
+  // An alarm ("Larm inbrott", "Larm överfall") is not a confirmed event.
+  if (text.startsWith('larm')) {
+    return 'other';
+  }
   if (text.includes('inbrott')) {
     return 'burglary';
   }
@@ -301,8 +305,8 @@ const ROWS = [
     'Mutmaßliche Schüsse',
     'Posible tiroteo',
   ],
-  ['Stöld', 'Theft', 'Vol', 'Diebstahl', 'Robo'],
-  ['Stöld, försök', 'Attempted theft', 'Tentative de vol', 'Diebstahlsversuch', 'Intento de robo'],
+  ['Stöld', 'Theft', 'Vol', 'Diebstahl', 'Hurto'],
+  ['Stöld, försök', 'Attempted theft', 'Tentative de vol', 'Diebstahlsversuch', 'Intento de hurto'],
   ['Stöld, ringa', 'Petty theft', 'Vol simple', 'Geringfügiger Diebstahl', 'Hurto menor'],
   [
     'Stöld/inbrott',

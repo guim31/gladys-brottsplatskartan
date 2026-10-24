@@ -39,6 +39,10 @@ export function registerHandlers(gladys, options = {}) {
     (fn) =>
     async (...args) => {
       await ready;
+      if (!started) {
+        // The start failed (Gladys unreachable at that moment): said plainly.
+        throw new Error(render(STATUS, 'initFailed').en);
+      }
       return fn(...args);
     };
 
