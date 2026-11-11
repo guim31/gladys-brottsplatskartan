@@ -25,7 +25,7 @@ with Brottsplatskartan nor with the Swedish police.
 
 ## Requirements
 
-- Gladys Assistant 5.1 or later.
+- Gladys Assistant 5.3 or later.
 - Internet access from the Gladys host (`brottsplatskartan.se`).
 - For the radius zone: a location for your house in Gladys, or coordinates in the configuration.
 

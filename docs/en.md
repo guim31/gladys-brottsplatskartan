@@ -12,7 +12,7 @@ the Swedish police.
 
 ## Requirements
 
-- Gladys Assistant 5.1.0 or later.
+- Gladys Assistant 5.3.0 or later.
 - Internet access from Gladys: the integration reads `brottsplatskartan.se` over HTTPS. No account
   and no key.
 - For the radius zone: a location for your house in Gladys (**Settings → Houses**), or coordinates

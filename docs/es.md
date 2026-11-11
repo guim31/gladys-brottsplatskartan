@@ -13,7 +13,7 @@ policía sueca.
 
 ## Requisitos
 
-- Gladys Assistant 5.1.0 o posterior.
+- Gladys Assistant 5.3.0 o posterior.
 - Acceso a Internet desde Gladys: la integración lee `brottsplatskartan.se` por HTTPS. Sin cuenta
   ni clave.
 - Para la zona de radio: la ubicación de su casa en Gladys (**Ajustes → Casas**), o unas

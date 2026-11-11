@@ -13,7 +13,7 @@ schwedischen Polizei verbunden.
 
 ## Voraussetzungen
 
-- Gladys Assistant 5.1.0 oder neuer.
+- Gladys Assistant 5.3.0 oder neuer.
 - Internetzugang von Gladys aus: Die Integration liest `brottsplatskartan.se` per HTTPS. Kein
   Konto und kein Schlüssel.
 - Für die Radius-Zone: ein Standort für dein Haus in Gladys (**Einstellungen → Häuser**) oder in

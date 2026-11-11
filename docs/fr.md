@@ -13,7 +13,7 @@ suédoise.
 
 ## Prérequis
 
-- Gladys Assistant 5.1.0 ou plus récent.
+- Gladys Assistant 5.3.0 ou plus récent.
 - Un accès à Internet depuis Gladys : l'intégration lit `brottsplatskartan.se` en HTTPS. Ni compte
   ni clé.
 - Pour la zone de rayon : la position de votre maison dans Gladys (**Paramètres → Maisons**), ou des
