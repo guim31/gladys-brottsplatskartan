@@ -8,8 +8,8 @@
     "de": "Polizeimeldungen aus Schweden in deiner Nähe, von Brottsplatskartan: Zähler, Szenen und ein Widget.",
     "es": "Sucesos de la policía sueca cerca de su casa, por Brottsplatskartan: contadores, escenas y widget."
   },
-  "version": "1.0.0",
-  "docker_image": "ghcr.io/guim31/gladys-brottsplatskartan:1.0.0",
+  "version": "1.0.1",
+  "docker_image": "ghcr.io/guim31/gladys-brottsplatskartan:1.0.1",
   "gladys_version": ">=5.3.0",
   "cover_image": "https://raw.githubusercontent.com/guim31/gladys-brottsplatskartan/main/cover.png",
   "categories": ["security"],

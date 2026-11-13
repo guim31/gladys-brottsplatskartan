@@ -10,6 +10,8 @@ the notes of the version's GitHub Release.
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-11-13
+
 ### Changed
 
 - Declared for Sweden only (`countries: ["SE"]`): the Gladys catalog of an
@@ -35,5 +37,6 @@ the notes of the version's GitHub Release.
 - "Show the latest events" in the Configuration screen.
 - Police event types translated into English, French, German and Spanish, the Swedish label kept.
 
-[Unreleased]: https://github.com/guim31/gladys-brottsplatskartan/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/guim31/gladys-brottsplatskartan/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/guim31/gladys-brottsplatskartan/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/guim31/gladys-brottsplatskartan/releases/tag/v1.0.0

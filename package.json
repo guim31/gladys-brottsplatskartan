@@ -1,6 +1,6 @@
 {
   "name": "gladys-brottsplatskartan",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "Gladys Assistant integration: Swedish police events (Brottsplatskartan) around your home, in a county or in named places.",
   "type": "module",
